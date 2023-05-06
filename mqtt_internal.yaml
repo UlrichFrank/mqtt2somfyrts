@@ -1,0 +1,16 @@
+# Publish values in json message and filter NaN values (they will not get published)
+# Used `uptime` platform to execute the publish in a fixed interval.
+
+- platform: uptime
+  id: publish_alive_json
+  update_interval: ${publish_alive_interval}
+  on_value:
+    if:
+      condition:
+        lambda: 'return true;'
+      then:
+        - mqtt.publish_json:
+            topic: ${base_topic}/alive
+            retain: True
+            payload: |-
+              root["alive"] = "true";

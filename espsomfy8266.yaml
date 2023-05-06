@@ -1,0 +1,87 @@
+substitutions:
+  device_name: "espsomfy"
+  appversion: "1.0.0"
+  base_topic: "somfy"
+  publish_alive_interval: 10s
+
+esphome:
+  name: ${device_name}
+  libraries:
+    - EEPROM
+    - SPI
+    - SmartRC-CC1101-Driver-Lib@2.5.7
+    - Somfy_Remote_Lib@0.4.1
+  includes:
+    - somfy_remote_id.h
+    - somfy_cover.h
+
+packages:
+  mqtt: !include mqtt.yaml
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  level: WARN
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret api_password
+
+wifi:
+  ssid: "automation"
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: 10.0.10.22
+    gateway: 10.0.10.1
+    subnet: 255.255.255.0  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Espsomfy Fallback Hotspot"
+    password: !secret ap_password
+
+web_server:
+  port: 80
+  
+captive_portal:
+
+# Individual sensors
+sensor:
+  - <<: !include mqtt_internal.yaml
+
+text_sensor:
+  # Version Text Sensor
+  # see: https://esphome.io/components/text_sensor/version.html?highlight=platform%20version
+  - platform: version
+    name: ${device_name} Version
+    id: appver
+    internal: true
+
+cover:
+  - platform: custom
+    lambda: |-
+      auto somfy_remote = new SomfyESPRemote();
+      somfy_remote->add_cover("somfy", "garage", SOMFY_REMOTE_GARAGE);
+      App.register_component(somfy_remote);
+      return somfy_remote->covers;
+
+    covers:
+      - id: "somfy"
+        name: "Somfy Cover"
+
+switch:
+  - platform: template
+    name: "PROG"
+    turn_on_action:
+      - lambda: |-
+          ((SomfyESPCover*)id(somfy))->program();
+  - platform: template
+    name: "STOP"
+    turn_on_action:
+      - lambda: |-
+          ((SomfyESPCover*)id(somfy))->make_call().set_command_stop();

@@ -1,0 +1,12 @@
+mqtt: 
+  broker: 10.0.10.10
+  port: 1883
+  username: mosquitto
+  password: !secret mqtt_password 
+  topic_prefix: ${base_topic}
+  keepalive: 60s
+#  on_message:
+#    topic: ${base_topic}/set
+#    qos: 0
+#    then:
+#      - switch.turn_on: some_switch

@@ -1,0 +1,33 @@
+esphome:
+  name: espsomfy
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret api_password
+
+wifi:
+  ssid: "automation"
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Espsomfy Fallback Hotspot"
+    password: !secret ap_password
+
+captive_portal:
+
+mqtt:
+  broker: homeserver.diefranks.eu
+  username: mosquitto
+  password: !secret mqtt_password
